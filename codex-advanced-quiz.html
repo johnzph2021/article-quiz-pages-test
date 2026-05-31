@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex 进阶教程测验</title>
+  <meta name="description" content="Codex 保姆级进阶教程 3 个真实场景案例的互动复习测验。">
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d9e1ea;
+      --paper: #f8fafc;
+      --panel: #ffffff;
+      --blue: #225fbf;
+      --green: #157347;
+      --red: #b42318;
+      --teal: #0f766e;
+      --shadow: 0 14px 42px rgba(15, 23, 42, .10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      line-height: 1.55;
+    }
+
+    button {
+      font: inherit;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: #eef4f8;
+      padding: 22px;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .source {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .pill {
+      display: inline-block;
+      border: 1px solid #b8c7d7;
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: #38536f;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .meter {
+      height: 10px;
+      border-radius: 999px;
+      background: #dbe5ef;
+      overflow: hidden;
+      margin: 8px 0 16px;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0;
+      background: var(--teal);
+      transition: width .2s ease;
+    }
+
+    .stat {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      border-top: 1px solid var(--line);
+      padding: 12px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stat strong { color: var(--ink); }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .nav button {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+      padding: 9px;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .nav button.active { background: #dbeafe; }
+    .nav button.correct { border-left: 4px solid var(--green); }
+    .nav button.wrong { border-left: 4px solid var(--red); }
+
+    main {
+      min-width: 0;
+      padding: 34px;
+    }
+
+    .screen {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: calc(100vh - 68px);
+      display: grid;
+      align-content: center;
+      gap: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 36px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 760px;
+    }
+
+    .primary,
+    .secondary {
+      min-height: 44px;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 700;
+    }
+
+    .primary {
+      background: var(--blue);
+      color: white;
+    }
+
+    .secondary {
+      background: #e6edf4;
+      color: var(--ink);
+    }
+
+    .quiz {
+      display: none;
+      gap: 18px;
+    }
+
+    .question-panel,
+    .review-panel,
+    .summary-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 22px;
+    }
+
+    .kicker {
+      color: var(--teal);
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0 0 18px;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+    }
+
+    .option:hover { border-color: var(--blue); }
+    .option.selected.correct { border-color: var(--green); background: #e9f7ef; }
+    .option.selected.wrong { border-color: var(--red); background: #fff0ee; }
+    .option.reveal { border-color: var(--green); }
+
+    .feedback {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 8px;
+      background: #eef4ff;
+      color: var(--ink);
+      display: none;
+    }
+
+    .feedback.good { background: #e9f7ef; color: var(--green); }
+    .feedback.bad { background: #fff0ee; color: var(--red); }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .result {
+      display: none;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      margin-top: 18px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .summary-grid div {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .summary-grid strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 840px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      main { padding: 20px; }
+      h1 { font-size: 30px; }
+      .question { font-size: 21px; }
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="测验侧边栏">
+      <div class="brand">Codex 进阶教程测验</div>
+      <div class="source">来源：Codex 保姆级进阶教程：3 个真实场景案例.pdf</div>
+      <div class="pill">15 题 · 理解 + 应用</div>
+      <div class="note">进度</div>
+      <div class="meter" aria-label="答题进度"><div class="bar" id="bar"></div></div>
+      <div class="stat"><span>当前题目</span><strong id="currentStat">未开始</strong></div>
+      <div class="stat"><span>得分</span><strong id="scoreStat">0 / 0</strong></div>
+      <div class="stat"><span>错题</span><strong id="wrongStat">0</strong></div>
+      <div class="nav" id="questionNav"></div>
+    </aside>
+
+    <main>
+      <section class="screen hero" id="startScreen">
+        <div>
+          <div class="kicker">从文章到可复习的题库</div>
+          <h1>Codex 进阶教程：3 个真实场景案例测验</h1>
+          <p class="lead">这套题帮你检查：什么任务适合交给 Codex、如何建学习/表格/对比项目、怎样纠错、哪些安全边界不能碰，以及如何让 AGENTS.md 和日常习惯持续生长。</p>
+        </div>
+        <div class="actions">
+          <button class="primary" id="startBtn">Start</button>
+          <button class="secondary" id="resetBtn">重置</button>
+        </div>
+      </section>
+
+      <section class="screen quiz" id="quizScreen">
+        <div class="question-panel">
+          <div class="kicker" id="typeLabel">单选题</div>
+          <h2 class="question" id="questionText"></h2>
+          <div class="options" id="options"></div>
+          <div class="feedback" id="feedback"></div>
+          <div class="actions">
+            <button class="secondary" id="prevBtn">上一题</button>
+            <button class="primary" id="nextBtn">下一题</button>
+          </div>
+        </div>
+
+        <div class="result" id="resultBox"></div>
+
+        <div class="review-panel">
+          <h2>错题复习</h2>
+          <div id="reviewList" class="note">答错后，这里会出现复习提示。</div>
+        </div>
+
+        <div class="summary-panel">
+          <h2>文章知识框架</h2>
+          <div class="summary-grid">
+            <div><strong>任务判断</strong><span>输入、规则、输出和验证标准越清楚，越适合交给 Codex。</span></div>
+            <div><strong>三个场景</strong><span>学习资料整理、表格处理、方案对比，是新手最容易跑通的日常场景。</span></div>
+            <div><strong>纠错方式</strong><span>不要关掉重开。在同一对话里指出错误，让 Codex 基于上下文修正。</span></div>
+            <div><strong>长期习惯</strong><span>把经验写进 AGENTS.md，每天 2 分钟存素材、列待办或补规则。</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        type: "任务判断",
+        prompt: "文章给出的判断公式是什么？什么任务更适合交给 Codex？",
+        options: [
+          "越需要审美判断，越适合交给 Codex",
+          "能写清输入、规则、输出样式的任务，更适合交给 Codex",
+          "越依赖真实账号操作，越适合交给 Codex",
+          "没有材料也能让 Codex 自由发挥"
+        ],
+        answer: 1,
+        explain: "文章强调：能用一张纸写清输入是什么、规则是什么、输出长什么样，就更适合交给 Codex。"
+      },
+      {
+        type: "边界题",
+        prompt: "下列哪类任务文章明确不建议交给 Codex？",
+        options: [
+          "把课程资料整理成学习笔记",
+          "按城市筛选客户表",
+          "操作支付、社交账号或公司后台",
+          "按指定维度整理课程对比表"
+        ],
+        answer: 2,
+        explain: "支付、社交账号、公司后台都属于高风险操作，文章把它们列为硬性红线。"
+      },
+      {
+        type: "学习场景",
+        prompt: "学习资料整理项目中，learning-raw/ 最适合放什么？",
+        options: [
+          "Codex 整理后的最终笔记",
+          "原始链接、网页摘录、课程大纲原文",
+          "每次处理后的日志",
+          "已经发布的网站文件"
+        ],
+        answer: 1,
+        explain: "learning-raw/ 是原始材料入口；整理后的结构化笔记应放在 learning-output/。"
+      },
+      {
+        type: "学习场景",
+        prompt: "文章为什么说手动复制网页内容到文件有时比让 Codex 直接打开网页更稳？",
+        options: [
+          "因为手动复制一定更快",
+          "因为网页可能需要登录、反爬或内容分散，直接读取可能残缺",
+          "因为 Codex 不能处理 Markdown 文件",
+          "因为复制后就不需要整理"
+        ],
+        answer: 1,
+        explain: "方式 B 虽然多一步，但素材更完整，能减少 Codex 因页面残缺而误判或编造。"
+      },
+      {
+        type: "AGENTS.md",
+        prompt: "学习资料整理项目的 AGENTS.md 中，哪条规则最符合文章要求？",
+        options: [
+          "不同课程可以合并成一份方便阅读",
+          "没有写到的信息可以补充成合理推测",
+          "每个来源单独整理，原始材料没写的标注待补充",
+          "整理时优先追求文案好看"
+        ],
+        answer: 2,
+        explain: "文章反复强调不要编造、不要混合来源；没写清楚的内容标注待补充。"
+      },
+      {
+        type: "表格处理",
+        prompt: "表格处理项目的核心安全原则是什么？",
+        options: [
+          "原始表格不动，结果输出到专门目录",
+          "直接覆盖原文件，节省空间",
+          "尽量把所有列都删到最少",
+          "默认理解所有列的业务含义"
+        ],
+        answer: 0,
+        explain: "文章要求不修改、删除、移动原始文件；结果输出到 spreadsheets-output/。"
+      },
+      {
+        type: "表格处理",
+        prompt: "处理表格前，文章建议 Codex 先报告什么？",
+        options: [
+          "自己的运行速度",
+          "文件有几行几列、列名和数据类型/示例",
+          "最终结果是否一定正确",
+          "表格是否适合发朋友圈"
+        ],
+        answer: 1,
+        explain: "先看结构再处理，可以减少列名误解、日期/金额/手机号格式误判等问题。"
+      },
+      {
+        type: "表格处理",
+        prompt: "对比两版客户名单时，文章建议用什么作为匹配依据？",
+        options: [
+          "客户编号",
+          "客户姓名首字母",
+          "文件大小",
+          "表格行号"
+        ],
+        answer: 0,
+        explain: "文章示例要求用客户编号匹配，分别找新增、删除和信息变更客户。"
+      },
+      {
+        type: "方案对比",
+        prompt: "让 Codex 做比较和判断时，文章强调的核心逻辑是什么？",
+        options: [
+          "Codex 替你做最终选择",
+          "只问一句哪个更好",
+          "你给材料、定维度、给权重、自己决策",
+          "让 Codex 不标来源直接总结"
+        ],
+        answer: 2,
+        explain: "Codex 负责把零散信息整理成方便决策的格式，最终决策仍然由你来做。"
+      },
+      {
+        type: "方案对比",
+        prompt: "课程或工具对比表中，遇到原材料没有写清楚的信息应该怎么处理？",
+        options: [
+          "根据常识补全",
+          "标注待核实",
+          "直接删掉整个工具",
+          "写成肯定结论"
+        ],
+        answer: 1,
+        explain: "文章要求每条信息标注来源；不确定的内容标待核实，避免把推测当事实。"
+      },
+      {
+        type: "纠错",
+        prompt: "Codex 犯错后，文章建议新手不要做什么？",
+        options: [
+          "在同一对话指出错误",
+          "让它重新读取文件",
+          "关掉重开一个对话",
+          "把修正经验写进 AGENTS.md"
+        ],
+        answer: 2,
+        explain: "关掉重开会丢失上下文。熟练用户会在同一对话里把错误修正成正确答案。"
+      },
+      {
+        type: "纠错",
+        prompt: "如果 Codex 把北京客户筛少了，文章建议怎么纠正？",
+        options: [
+          "只说你错了，不给信息",
+          "让它检查城市列有哪些不同值、是否有空格或北京市等差异",
+          "直接删除原始表格",
+          "换一个完全无关项目"
+        ],
+        answer: 1,
+        explain: "文章示例强调重新读取数据，先检查列值差异，再确认筛选规则。"
+      },
+      {
+        type: "安全边界",
+        prompt: "关于 API Key、密码、Cookie，文章建议怎么做？",
+        options: [
+          "写进 README.md 方便查看",
+          "写进 AGENTS.md 让 Codex 记住",
+          "放进 .env，并把 .env 加进 .gitignore",
+          "发到公开仓库里备份"
+        ],
+        answer: 2,
+        explain: "密钥不能写进项目说明或协作规则；应放 .env，并确保不会被同步到公开位置。"
+      },
+      {
+        type: "AGENTS.md",
+        prompt: "文章说 AGENTS.md 应该如何成长？",
+        options: [
+          "写完第一版后永远不改",
+          "每次发现错误、规则或新用法，就补一笔进去",
+          "只写项目标题",
+          "只记录漂亮文案"
+        ],
+        answer: 1,
+        explain: "AGENTS.md 是持续生长的协作规则文件，错误和经验越积累，项目越顺。"
+      },
+      {
+        type: "习惯建立",
+        prompt: "文章最后建议每天打开 Codex 的 2 分钟仪式可以做什么？",
+        options: [
+          "必须每天完成一个大项目",
+          "存素材、列待办、精简笔记或补规则",
+          "只聊天不落文件",
+          "每天重建一次项目"
+        ],
+        answer: 1,
+        explain: "文章强调不需要每天输出成品；存素材、列待办、补规则都算把 Codex 变成固定工作流的一部分。"
+      }
+    ];
+
+    const state = {
+      started: false,
+      index: 0,
+      answers: Array(questions.length).fill(null)
+    };
+
+    const startScreen = document.getElementById("startScreen");
+    const quizScreen = document.getElementById("quizScreen");
+    const questionText = document.getElementById("questionText");
+    const typeLabel = document.getElementById("typeLabel");
+    const optionsBox = document.getElementById("options");
+    const feedback = document.getElementById("feedback");
+    const bar = document.getElementById("bar");
+    const currentStat = document.getElementById("currentStat");
+    const scoreStat = document.getElementById("scoreStat");
+    const wrongStat = document.getElementById("wrongStat");
+    const questionNav = document.getElementById("questionNav");
+    const resultBox = document.getElementById("resultBox");
+    const reviewList = document.getElementById("reviewList");
+
+    function score() {
+      return state.answers.reduce((sum, selected, i) => sum + (selected === questions[i].answer ? 1 : 0), 0);
+    }
+
+    function answeredCount() {
+      return state.answers.filter(item => item !== null).length;
+    }
+
+    function wrongItems() {
+      return state.answers
+        .map((selected, i) => ({ selected, i }))
+        .filter(item => item.selected !== null && item.selected !== questions[item.i].answer);
+    }
+
+    function renderNav() {
+      questionNav.innerHTML = "";
+      questions.forEach((question, i) => {
+        const selected = state.answers[i];
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = [
+          i === state.index ? "active" : "",
+          selected === question.answer ? "correct" : "",
+          selected !== null && selected !== question.answer ? "wrong" : ""
+        ].join(" ").trim();
+        btn.innerHTML = `<strong>${i + 1}</strong><span>${question.type}</span>`;
+        btn.addEventListener("click", () => {
+          state.index = i;
+          render();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        questionNav.appendChild(btn);
+      });
+    }
+
+    function renderReview() {
+      const wrong = wrongItems();
+      wrongStat.textContent = String(wrong.length);
+      if (!wrong.length) {
+        reviewList.textContent = answeredCount() ? "目前没有错题。" : "答错后，这里会出现复习提示。";
+        return;
+      }
+      reviewList.innerHTML = wrong.map(item => {
+        const question = questions[item.i];
+        return `<p><strong>第 ${item.i + 1} 题：</strong>${question.explain}</p>`;
+      }).join("");
+    }
+
+    function renderResult() {
+      if (answeredCount() < questions.length) {
+        resultBox.style.display = "none";
+        return;
+      }
+      resultBox.style.display = "block";
+      resultBox.innerHTML = `<strong>完成：</strong>你的得分是 ${score()} / ${questions.length}。${wrongItems().length ? "建议先复习错题，再重新测一次。" : "这一轮全部答对，可以进入下一层应用题。"}`
+    }
+
+    function render() {
+      const question = questions[state.index];
+      typeLabel.textContent = question.type;
+      questionText.textContent = question.prompt;
+      optionsBox.innerHTML = "";
+
+      question.options.forEach((option, i) => {
+        const btn = document.createElement("button");
+        const selected = state.answers[state.index];
+        btn.type = "button";
+        btn.className = "option";
+        if (selected !== null && i === selected) {
+          btn.classList.add("selected", i === question.answer ? "correct" : "wrong");
+        }
+        if (selected !== null && i === question.answer && selected !== question.answer) {
+          btn.classList.add("reveal");
+        }
+        btn.textContent = option;
+        btn.addEventListener("click", () => {
+          state.answers[state.index] = i;
+          render();
+        });
+        optionsBox.appendChild(btn);
+      });
+
+      const selected = state.answers[state.index];
+      if (selected === null) {
+        feedback.style.display = "none";
+        feedback.className = "feedback";
+      } else {
+        const isRight = selected === question.answer;
+        feedback.style.display = "block";
+        feedback.className = `feedback ${isRight ? "good" : "bad"}`;
+        feedback.textContent = `${isRight ? "答对了。" : "这题不对。"} ${question.explain}`;
+      }
+
+      const progress = Math.round(answeredCount() / questions.length * 100);
+      bar.style.width = `${progress}%`;
+      currentStat.textContent = `${state.index + 1} / ${questions.length}`;
+      scoreStat.textContent = `${score()} / ${questions.length}`;
+      renderNav();
+      renderReview();
+      renderResult();
+    }
+
+    document.getElementById("startBtn").addEventListener("click", () => {
+      state.started = true;
+      startScreen.style.display = "none";
+      quizScreen.style.display = "grid";
+      render();
+      window.scrollTo({ top: 0 });
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      state.started = false;
+      state.index = 0;
+      state.answers = Array(questions.length).fill(null);
+      startScreen.style.display = "grid";
+      quizScreen.style.display = "none";
+      bar.style.width = "0";
+      currentStat.textContent = "未开始";
+      scoreStat.textContent = "0 / 0";
+      wrongStat.textContent = "0";
+      questionNav.innerHTML = "";
+      window.scrollTo({ top: 0 });
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      state.index = Math.max(0, state.index - 1);
+      render();
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      state.index = Math.min(questions.length - 1, state.index + 1);
+      render();
+    });
+  </script>
+</body>
+</html>
