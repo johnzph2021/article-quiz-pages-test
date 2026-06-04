@@ -1070,7 +1070,7 @@
           <td data-label="Payment"><span class="pay">${order.payBrand}</span><span class="sub-text"> · **** ${order.payTail}</span></td>
           <td data-label="Fulfillment"><span class="tag ${fulfillmentTone[order.fulfillment] || "gray"}">${order.fulfillment}</span></td>
           <td data-label="Status"><span class="tag ${order.statusType}">${order.status}</span></td>
-          <td data-label="Action"><button class="mini-btn" data-action="处理订单 ${order.rawId}">Process</button></td>
+          <td data-label="Action"><button class="mini-btn" data-action="处理订单 ${order.rawId}" onclick="handleAction(event)">Process</button></td>
         </tr>
       `).join("");
       orderSummary.textContent = `Showing 1 to ${filtered.length} of 24 orders`;
@@ -1078,7 +1078,7 @@
 
     function renderStock() {
       document.getElementById("stockList").innerHTML = stockItems.map((item) => `
-        <button class="inventory-row" data-action="${item.action}">
+        <button class="inventory-row" data-action="${item.action}" onclick="handleAction(event)">
           <span class="thumb">${item.icon}</span>
           <span class="row-main">
             <span class="row-title">${item.name}</span>
@@ -1091,7 +1091,7 @@
 
     function renderTasks() {
       document.getElementById("taskList").innerHTML = tasks.map((task) => `
-        <button class="task-row" data-action="${task.action}">
+        <button class="task-row" data-action="${task.action}" onclick="handleAction(event)">
           <span class="thumb">${task.icon}</span>
           <span class="row-main">
             <span class="row-title">${task.title}</span>
@@ -1102,6 +1102,7 @@
     }
 
     function handleAction(event) {
+      if (event) event.stopPropagation();
       const button = event.target.closest("[data-action]");
       if (!button) return;
       const action = button.dataset.action;
