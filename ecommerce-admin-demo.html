@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Store Admin Dashboard</title>
+  <style>
+    :root {
+      --nav: #0e1b2b;
+      --nav-2: #132438;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --line: #e5eaf0;
+      --text: #111827;
+      --muted: #667085;
+      --soft: #98a2b3;
+      --blue: #2563eb;
+      --green: #079455;
+      --red: #d92d20;
+      --amber: #f79009;
+      --purple: #8b5cf6;
+      --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 10px 24px rgba(16, 24, 40, .04);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.35;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .toast {
+      position: fixed;
+      top: 18px;
+      right: 20px;
+      z-index: 50;
+      min-width: 230px;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      background: #f0fdf4;
+      color: #166534;
+      padding: 11px 13px;
+      font-size: 13px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: .18s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, var(--nav), #0a1625);
+      color: #fff;
+      padding: 20px 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px 22px;
+      font-weight: 700;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--blue);
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .collapse {
+      margin-left: auto;
+      color: #cbd5e1;
+      font-size: 16px;
+    }
+
+    .nav-group {
+      margin-bottom: 18px;
+    }
+
+    .group-title {
+      margin: 22px 12px 10px;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .nav-link {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .nav-link.active,
+    .nav-link:hover {
+      background: rgba(148, 163, 184, .16);
+      color: #fff;
+    }
+
+    .nav-link.active {
+      color: #60a5fa;
+    }
+
+    .nav-icon {
+      width: 20px;
+      text-align: center;
+      color: currentColor;
+      font-size: 15px;
+    }
+
+    .badge {
+      margin-left: auto;
+      min-width: 24px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .12);
+      color: #e2e8f0;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+    }
+
+    .main {
+      min-width: 0;
+    }
+
+    .topbar {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 0 36px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .title {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .bell {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      background: transparent;
+      color: #334155;
+      border-radius: 8px;
+      font-size: 18px;
+    }
+
+    .bell span {
+      position: absolute;
+      top: 3px;
+      right: 2px;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .avatar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 0;
+      background: transparent;
+      color: #334155;
+      border-radius: 8px;
+      padding: 4px 6px;
+    }
+
+    .avatar-img {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .workspace {
+      padding: 14px 36px 28px;
+    }
+
+    .tools {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: #1f2937;
+      padding: 8px 13px;
+      font-size: 13px;
+      box-shadow: 0 1px 1px rgba(16, 24, 40, .02);
+    }
+
+    .btn.primary {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, .22);
+    }
+
+    .btn:hover,
+    .mini-btn:hover,
+    .page-btn:hover {
+      border-color: #bfcbda;
+      background: #f8fafc;
+    }
+
+    .btn.primary:hover {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    .btn.done,
+    .mini-btn.done,
+    .page-btn.done {
+      border-color: #bbf7d0;
+      background: #ecfdf3;
+      color: #067647;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-card {
+      min-height: 178px;
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 6px;
+    }
+
+    .kpi-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .kpi-label {
+      color: #475467;
+      font-size: 14px;
+    }
+
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .kpi-icon.blue { background: #eff6ff; color: var(--blue); }
+    .kpi-icon.green { background: #ecfdf3; color: var(--green); }
+    .kpi-icon.purple { background: #f4f3ff; color: var(--purple); }
+    .kpi-icon.amber { background: #fffaeb; color: var(--amber); }
+
+    .kpi-value {
+      margin-top: 2px;
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+
+    .kpi-change {
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .kpi-note {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .spark {
+      width: 100%;
+      height: 42px;
+      align-self: end;
+    }
+
+    .spark path {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(330px, .75fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel-head {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .panel-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .search,
+    .select {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: #1f2937;
+      padding: 7px 10px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search {
+      width: 230px;
+    }
+
+    .search:focus,
+    .select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .11);
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      white-space: nowrap;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #fbfcfe;
+      color: #475467;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    tbody tr:hover {
+      background: #fbfdff;
+    }
+
+    .main-text {
+      color: #111827;
+      font-weight: 700;
+    }
+
+    .sub-text {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .pay {
+      display: inline-grid;
+      place-items: center;
+      min-width: 36px;
+      height: 21px;
+      border-radius: 5px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      color: #1d4ed8;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 22px;
+      min-width: 58px;
+      padding: 3px 8px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tag.green { background: #dff8e8; color: #087443; }
+    .tag.blue { background: #e8f1ff; color: #155eef; }
+    .tag.red { background: #fee4e2; color: #b42318; }
+    .tag.gray { background: #f2f4f7; color: #667085; }
+    .tag.amber { background: #fff1d6; color: #b54708; }
+
+    .mini-btn,
+    .page-btn {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: #344054;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .list {
+      padding: 4px 16px 14px;
+    }
+
+    .inventory-row,
+    .task-row {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .inventory-row:last-child,
+    .task-row:last-child {
+      border-bottom: 0;
+    }
+
+    .thumb {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      font-size: 20px;
+    }
+
+    .row-main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .row-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .row-meta {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .stock-number {
+      min-width: 54px;
+      text-align: right;
+      color: var(--red);
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .stock-number span {
+      display: block;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .task-count {
+      min-width: 34px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .task-count.red { background: #fee4e2; color: #d92d20; }
+    .task-count.amber { background: #fff1d6; color: #b54708; }
+    .task-count.blue { background: #e8f1ff; color: #155eef; }
+
+    .table-foot {
+      min-height: 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 6px;
+    }
+
+    .page-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+    }
+
+    .page-btn.active {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1180px) {
+      .app {
+        grid-template-columns: 220px minmax(0, 1fr);
+      }
+
+      .workspace,
+      .topbar {
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        display: block;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        padding: 12px;
+      }
+
+      .brand {
+        padding-bottom: 12px;
+      }
+
+      .nav-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .group-title,
+      .sidebar-bottom {
+        display: none;
+      }
+
+      .nav-link {
+        min-height: 36px;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+
+      .topbar {
+        height: auto;
+        align-items: flex-start;
+        padding: 16px;
+      }
+
+      .title {
+        font-size: 20px;
+      }
+
+      .workspace {
+        padding: 12px;
+      }
+
+      .tools {
+        justify-content: flex-start;
+      }
+
+      .btn {
+        flex: 1 1 145px;
+      }
+
+      .kpis {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .kpi-card {
+        min-height: 142px;
+        padding: 14px;
+      }
+
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .panel-tools,
+      .search,
+      .select {
+        width: 100%;
+      }
+
+      .table-wrap {
+        overflow: visible;
+      }
+
+      table,
+      thead,
+      tbody,
+      tr,
+      td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        border-bottom: 1px solid var(--line);
+        padding: 8px 0;
+      }
+
+      td {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 10px;
+        border-bottom: 0;
+        padding: 6px 14px;
+        white-space: normal;
+      }
+
+      td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .table-foot {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toast {
+        left: 12px;
+        right: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast">操作已记录</div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">店</div>
+        <div>Store Admin</div>
+        <div class="collapse">⌃</div>
+      </div>
+
+      <div class="nav-group">
+        <a class="nav-link active" href="#dashboard"><span class="nav-icon">⌂</span>Dashboard</a>
+        <a class="nav-link" href="#orders"><span class="nav-icon">▣</span>Orders <span class="badge">24</span></a>
+        <a class="nav-link" href="#products"><span class="nav-icon">◇</span>Products</a>
+        <a class="nav-link" href="#customers"><span class="nav-icon">◌</span>Customers</a>
+        <a class="nav-link" href="#marketing"><span class="nav-icon">◁</span>Marketing</a>
+        <a class="nav-link" href="#analytics"><span class="nav-icon">▥</span>Analytics</a>
+        <a class="nav-link" href="#discounts"><span class="nav-icon">⚙</span>Discounts</a>
+        <a class="nav-link" href="#content"><span class="nav-icon">☷</span>Content</a>
+      </div>
+
+      <div class="group-title">Sales Channels</div>
+      <div class="nav-group">
+        <a class="nav-link" href="#online"><span class="nav-icon">▤</span>淘宝店铺</a>
+        <a class="nav-link" href="#douyin"><span class="nav-icon">▯</span>抖音小店</a>
+        <a class="nav-link" href="#pos"><span class="nav-icon">▢</span>线下自提</a>
+      </div>
+
+      <div class="sidebar-bottom">
+        <a class="nav-link" href="#settings"><span class="nav-icon">⚙</span>Settings</a>
+        <a class="nav-link" href="#help"><span class="nav-icon">?</span>Help & Support</a>
+      </div>
+    </aside>
+
+    <main class="main" id="dashboard">
+      <header class="topbar">
+        <h1 class="title">Dashboard</h1>
+        <div class="top-actions">
+          <button class="bell" data-action="查看通知">
+            ♧
+            <span>8</span>
+          </button>
+          <button class="avatar" data-action="打开账号菜单">
+            <span class="avatar-img">林</span>
+            <span>⌄</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <div class="tools">
+          <button class="btn" data-action="切换日期范围">▣ 2026-06-01 - 2026-06-04</button>
+          <button class="btn" data-action="导出经营报表">⇩ Export</button>
+          <button class="btn primary" data-action="新建订单或补货单">＋ New</button>
+        </div>
+
+        <section class="kpis" aria-label="经营看板">
+          <article class="card kpi-card">
+            <div class="kpi-head">
+              <div class="kpi-label">Total Sales</div>
+              <div class="kpi-icon blue">▢</div>
+            </div>
+            <div class="kpi-value">¥38,642.50</div>
+            <div class="kpi-change">↑ 12.8%</div>
+            <div class="kpi-note">vs 2026-05-28 - 2026-05-31</div>
+            <svg class="spark" viewBox="0 0 260 44" aria-hidden="true"><path stroke="#2563eb" d="M2 31 C16 22 28 38 43 31 S67 28 80 34 S103 12 121 21 S143 30 157 14 S178 37 194 28 S213 12 230 26 S248 16 258 19"/></svg>
+          </article>
+
+          <article class="card kpi-card">
+            <div class="kpi-head">
+              <div class="kpi-label">Orders</div>
+              <div class="kpi-icon green">▤</div>
+            </div>
+            <div class="kpi-value">286</div>
+            <div class="kpi-change">↑ 14.3%</div>
+            <div class="kpi-note">淘宝 154 / 抖音小店 132</div>
+            <svg class="spark" viewBox="0 0 260 44" aria-hidden="true"><path stroke="#16a34a" d="M2 34 C18 20 29 39 45 32 S70 28 83 19 S103 25 117 16 S140 30 154 12 S178 27 192 14 S214 25 228 11 S246 20 258 14"/></svg>
+          </article>
+
+          <article class="card kpi-card">
+            <div class="kpi-head">
+              <div class="kpi-label">Customers</div>
+              <div class="kpi-icon purple">◌</div>
+            </div>
+            <div class="kpi-value">1,268</div>
+            <div class="kpi-change">↑ 9.7%</div>
+            <div class="kpi-note">老客复购率 18.4%</div>
+            <svg class="spark" viewBox="0 0 260 44" aria-hidden="true"><path stroke="#a855f7" d="M2 26 C21 31 31 18 45 25 S70 36 84 27 S103 22 119 17 S144 33 161 27 S184 36 198 29 S221 35 235 24 S249 17 258 19"/></svg>
+          </article>
+
+          <article class="card kpi-card">
+            <div class="kpi-head">
+              <div class="kpi-label">Conversion Rate</div>
+              <div class="kpi-icon amber">◔</div>
+            </div>
+            <div class="kpi-value">3.42%</div>
+            <div class="kpi-change">↑ 0.6%</div>
+            <div class="kpi-note">直播间支付转化 4.8%</div>
+            <svg class="spark" viewBox="0 0 260 44" aria-hidden="true"><path stroke="#f59e0b" d="M2 27 C22 20 31 36 46 24 S69 17 83 22 S104 19 119 26 S139 10 155 20 S176 29 193 27 S211 33 225 24 S245 15 258 12"/></svg>
+          </article>
+        </section>
+
+        <section class="layout">
+          <div class="stack">
+            <section class="card" id="orders">
+              <div class="panel-head">
+                <h2 class="panel-title">Recent Orders</h2>
+                <div class="panel-tools">
+                  <input class="search" id="orderSearch" type="search" placeholder="搜索订单、买家、商品">
+                  <select class="select" id="statusFilter" aria-label="订单状态筛选">
+                    <option value="all">全部状态</option>
+                    <option value="待发货">待发货</option>
+                    <option value="已发货">已发货</option>
+                    <option value="售后中">售后中</option>
+                    <option value="待付款">待付款</option>
+                  </select>
+                  <button class="mini-btn" data-action="查看全部订单">View all</button>
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>Customer</th>
+                      <th>Date</th>
+                      <th>Total</th>
+                      <th>Payment</th>
+                      <th>Fulfillment</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ordersBody"></tbody>
+                </table>
+              </div>
+              <div class="table-foot">
+                <div id="orderSummary">Showing 1 to 10 of 24 orders</div>
+                <div class="pagination">
+                  <button class="page-btn" data-action="上一页">‹</button>
+                  <button class="page-btn active" data-action="切换到第 1 页">1</button>
+                  <button class="page-btn" data-action="切换到第 2 页">2</button>
+                  <button class="page-btn" data-action="切换到第 3 页">3</button>
+                  <button class="page-btn" data-action="下一页">›</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="analytics">
+              <div class="panel-head">
+                <h2 class="panel-title">Channel Performance</h2>
+                <button class="mini-btn" data-action="查看渠道明细">View all</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Channel</th>
+                      <th>Visitors</th>
+                      <th>Paid Orders</th>
+                      <th>Revenue</th>
+                      <th>Note</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td data-label="Channel"><div class="main-text">抖音直播间</div><div class="sub-text">今晚 20:00 还有一场</div></td>
+                      <td data-label="Visitors">6,482</td>
+                      <td data-label="Paid Orders">132</td>
+                      <td data-label="Revenue">¥18,260.80</td>
+                      <td data-label="Note">清洁组合转化高，需覆盖直播库存</td>
+                    </tr>
+                    <tr>
+                      <td data-label="Channel"><div class="main-text">淘宝搜索</div><div class="sub-text">关键词：旅行收纳袋</div></td>
+                      <td data-label="Visitors">3,019</td>
+                      <td data-label="Paid Orders">84</td>
+                      <td data-label="Revenue">¥8,097.60</td>
+                      <td data-label="Note">主图测试继续跑，点击率 3.9%</td>
+                    </tr>
+                    <tr>
+                      <td data-label="Channel"><div class="main-text">老客复购</div><div class="sub-text">会员券触达 892 人</div></td>
+                      <td data-label="Visitors">892</td>
+                      <td data-label="Paid Orders">70</td>
+                      <td data-label="Revenue">¥11,389.00</td>
+                      <td data-label="Note">适合推加购包邮券</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <aside class="stack">
+            <section class="card" id="products">
+              <div class="panel-head">
+                <h2 class="panel-title">Inventory Alerts</h2>
+                <button class="mini-btn" data-action="查看全部库存预警">View all</button>
+              </div>
+              <div class="list" id="stockList"></div>
+            </section>
+
+            <section class="card" id="tasks">
+              <div class="panel-head">
+                <h2 class="panel-title">Pending Tasks</h2>
+                <button class="mini-btn" data-action="查看全部待办">View all</button>
+              </div>
+              <div class="list" id="taskList"></div>
+            </section>
+          </aside>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const orders = [
+      { orderId: "#1058", rawId: "TB2606041008", channel: "淘宝", customer: "周女士", product: "旅行压缩收纳袋", date: "Jun 4, 2026", amount: 128.8, payBrand: "ALIPAY", payTail: "5621", fulfillment: "待发货", status: "Paid", statusType: "green", note: "今日 17:30 前出库" },
+      { orderId: "#1057", rawId: "DY2606040952", channel: "抖音小店", customer: "阿航", product: "厨房免洗抹布", date: "Jun 4, 2026", amount: 89.5, payBrand: "DY", payTail: "7704", fulfillment: "Processing", status: "Paid", statusType: "green", note: "直播间订单，赠品已匹配" },
+      { orderId: "#1056", rawId: "TB2606040936", channel: "淘宝", customer: "李晨", product: "儿童防滑拖鞋", date: "Jun 4, 2026", amount: 59.9, payBrand: "ALIPAY", payTail: "4309", fulfillment: "售后中", status: "Refunding", statusType: "amber", note: "尺码换货，待确认地址" },
+      { orderId: "#1055", rawId: "DY2606040911", channel: "抖音小店", customer: "小鱼妈妈", product: "桌面收纳抽屉盒", date: "Jun 4, 2026", amount: 76.0, payBrand: "DY", payTail: "9205", fulfillment: "待发货", status: "Paid", statusType: "green", note: "库存仅 8 件，已锁货" },
+      { orderId: "#1054", rawId: "TB2606040844", channel: "淘宝", customer: "陈先生", product: "宠物除毛刷", date: "Jun 4, 2026", amount: 45.8, payBrand: "WAIT", payTail: "6188", fulfillment: "Unfulfilled", status: "Pending", statusType: "gray", note: "已领券未支付，可催付" },
+      { orderId: "#1053", rawId: "DY2606040819", channel: "抖音小店", customer: "南栀", product: "夏季冰丝床笠", date: "Jun 4, 2026", amount: 169.0, payBrand: "DY", payTail: "1026", fulfillment: "Processing", status: "Paid", statusType: "green", note: "赠品和主品一起打包" },
+      { orderId: "#1052", rawId: "TB2606040755", channel: "淘宝", customer: "王一诺", product: "便携榨汁杯", date: "Jun 4, 2026", amount: 139.0, payBrand: "ALIPAY", payTail: "3327", fulfillment: "Shipped", status: "Paid", statusType: "green", note: "客户询问电子发票" },
+      { orderId: "#1051", rawId: "TB2606040730", channel: "淘宝", customer: "郭晓", product: "咖啡马克杯 350ml", date: "Jun 4, 2026", amount: 49.0, payBrand: "ALIPAY", payTail: "8452", fulfillment: "Delivered", status: "Paid", statusType: "green", note: "已签收，暂无售后" },
+      { orderId: "#1050", rawId: "DY2606040708", channel: "抖音小店", customer: "Mia", product: "无线蓝牙耳机", date: "Jun 4, 2026", amount: 199.0, payBrand: "DY", payTail: "7761", fulfillment: "Processing", status: "Paid", statusType: "green", note: "高客单，客服跟进评价" },
+      { orderId: "#1049", rawId: "TB2606040656", channel: "淘宝", customer: "赵宁", product: "皮质双肩包", date: "Jun 4, 2026", amount: 259.0, payBrand: "ALIPAY", payTail: "2198", fulfillment: "待发货", status: "Paid", statusType: "green", note: "库存低，需先拣货" }
+    ];
+
+    const stockItems = [
+      { icon: "🎧", name: "无线蓝牙耳机", sku: "SKU: WH-1000XM5", left: 3, action: "为无线蓝牙耳机创建补货单" },
+      { icon: "⌚", name: "智能手表", sku: "SKU: SW-002", left: 5, action: "为智能手表创建补货单" },
+      { icon: "🎒", name: "皮质双肩包", sku: "SKU: LB-01", left: 8, action: "为皮质双肩包创建补货单" },
+      { icon: "☕", name: "咖啡马克杯 350ml", sku: "SKU: CM-350", left: 12, action: "为咖啡马克杯创建补货单" },
+      { icon: "💡", name: "桌面台灯", sku: "SKU: DL-01", left: 15, action: "为桌面台灯创建补货单" }
+    ];
+
+    const tasks = [
+      { icon: "▣", title: "Orders to fulfill", count: 12, tone: "red", action: "查看待发货订单" },
+      { icon: "◇", title: "Payments to capture", count: 7, tone: "amber", action: "查看待确认支付" },
+      { icon: "⚙", title: "Products out of stock", count: 5, tone: "red", action: "查看缺货商品" },
+      { icon: "☷", title: "Customer messages", count: 3, tone: "blue", action: "查看客服消息" }
+    ];
+
+    const fulfillmentTone = {
+      "待发货": "blue",
+      "Processing": "blue",
+      "Shipped": "green",
+      "Delivered": "green",
+      "售后中": "amber",
+      "Unfulfilled": "gray"
+    };
+
+    const ordersBody = document.getElementById("ordersBody");
+    const orderSearch = document.getElementById("orderSearch");
+    const statusFilter = document.getElementById("statusFilter");
+    const orderSummary = document.getElementById("orderSummary");
+    const toast = document.getElementById("toast");
+    let toastTimer;
+
+    function money(value) {
+      return "¥" + value.toFixed(2);
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("show");
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1700);
+    }
+
+    function renderOrders() {
+      const keyword = orderSearch.value.trim().toLowerCase();
+      const status = statusFilter.value;
+      const filtered = orders.filter((order) => {
+        const content = [order.orderId, order.rawId, order.channel, order.customer, order.product, order.date, order.note, order.fulfillment, order.status].join(" ").toLowerCase();
+        const matchKeyword = !keyword || content.includes(keyword);
+        const matchStatus = status === "all" || order.fulfillment === status || order.status === status;
+        return matchKeyword && matchStatus;
+      });
+
+      if (!filtered.length) {
+        ordersBody.innerHTML = '<tr><td colspan="8"><div class="empty">没有找到匹配订单，可换订单号、买家、商品或状态再试</div></td></tr>';
+        orderSummary.textContent = "Showing 0 of 24 orders";
+        return;
+      }
+
+      ordersBody.innerHTML = filtered.map((order) => `
+        <tr>
+          <td data-label="Order"><div class="main-text">${order.orderId}</div><div class="sub-text">${order.channel} · ${order.rawId}</div></td>
+          <td data-label="Customer"><div class="main-text">${order.customer}</div><div class="sub-text">${order.product}</div></td>
+          <td data-label="Date">${order.date}</td>
+          <td data-label="Total">${money(order.amount)}</td>
+          <td data-label="Payment"><span class="pay">${order.payBrand}</span><span class="sub-text"> · **** ${order.payTail}</span></td>
+          <td data-label="Fulfillment"><span class="tag ${fulfillmentTone[order.fulfillment] || "gray"}">${order.fulfillment}</span></td>
+          <td data-label="Status"><span class="tag ${order.statusType}">${order.status}</span></td>
+          <td data-label="Action"><button class="mini-btn" data-action="处理订单 ${order.rawId}">Process</button></td>
+        </tr>
+      `).join("");
+      orderSummary.textContent = `Showing 1 to ${filtered.length} of 24 orders`;
+    }
+
+    function renderStock() {
+      document.getElementById("stockList").innerHTML = stockItems.map((item) => `
+        <button class="inventory-row" data-action="${item.action}">
+          <span class="thumb">${item.icon}</span>
+          <span class="row-main">
+            <span class="row-title">${item.name}</span>
+            <span class="row-meta">${item.sku}</span>
+          </span>
+          <span class="stock-number">${item.left}<span>pieces left</span></span>
+        </button>
+      `).join("");
+    }
+
+    function renderTasks() {
+      document.getElementById("taskList").innerHTML = tasks.map((task) => `
+        <button class="task-row" data-action="${task.action}">
+          <span class="thumb">${task.icon}</span>
+          <span class="row-main">
+            <span class="row-title">${task.title}</span>
+          </span>
+          <span class="task-count ${task.tone}">${task.count}</span>
+        </button>
+      `).join("");
+    }
+
+    function handleAction(event) {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+      const action = button.dataset.action;
+      if (!button.dataset.originalText) {
+        button.dataset.originalText = button.textContent.trim();
+      }
+      button.classList.add("done");
+      if (button.matches(".btn, .mini-btn, .page-btn")) {
+        button.textContent = "Done";
+      }
+      showToast(`${action}：已记录`);
+    }
+
+    orderSearch.addEventListener("input", renderOrders);
+    statusFilter.addEventListener("change", renderOrders);
+    document.addEventListener("click", handleAction);
+    renderOrders();
+    renderStock();
+    renderTasks();
+  </script>
+</body>
+</html>
